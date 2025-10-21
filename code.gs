@@ -16,7 +16,7 @@ function doGet() {
 function submitData(data) {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    const driveFolder = DriveApp.getFolderById("1g7Nr59Ab62aW6l-QvTDtoyt3_c6K1S9f"); // <-- IMPORTANT: Add your Folder ID
+    const driveFolder = DriveApp.getFolderById("YOUR_FOLDER_ID_HERE"); // <-- IMPORTANT: Add your Folder ID
 
     // 1. Handle the Photo upload
     let photoLink = '';
@@ -72,4 +72,5 @@ function saveFileToDrive(folder, fileObject, prefix) {
   
   // Return the URL of the file
   return file.getUrl();
+
 }
