@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Personal Details Form</title>
+  </head>
+  <body class="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+  <!-- Vanta background container (full-screen, behind content) -->
+  <div id="vanta-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(135deg,#0f172a,#0ea5e9);"></div>
+
+  <!-- MAIN FORM CARD -->
+  <div id="formCard" class="w-full max-w-lg bg-white rounded-xl shadow-md p-6" style="position:relative;z-index:10;">
+      <h2 class="text-2xl font-semibold text-sky-600 text-center mb-6">Personal Details Form</h2>
+      
+      <!-- FORM START -->
+      <form id="userForm" class="space-y-4">
+        <!-- Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Name</label>
+          <input type="text" name="name" required class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-300" placeholder="Full name">
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" name="email" required class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-300" placeholder="you@example.com">
+        </div>
+
+        <!-- Phone Number -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+          <input type="tel" name="number" required class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-300" placeholder="(555) 555-0123">
+        </div>
+
+        <!-- Gender -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Gender</label>
+          <select name="gender" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-sky-300">
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+            <option value="prefer_not">Prefer not to say</option>
+          </select>
+        </div>
+
+        <!-- Date of Birth -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+          <input type="date" name="dob" required class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-300">
+        </div>
+
+        <!-- Address -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Address</label>
+          <textarea name="address" required rows="3" class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-300" placeholder="Street, City, State, ZIP"></textarea>
+        </div>
+
+        <!-- IMAGE UPLOAD SECTION -->
+        <div class="flex flex-col md:flex-row gap-4">
+
+          <!-- Passport Photo Upload -->
+           <div class="flex-1">
+             <label class="block text-sm font-medium text-gray-700">Passport-style Photo</label>
+             <input id="photoInput" name="photo" type="file" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-sky-100 file:text-sky-700" />
+             <img id="photoPreview" alt="Photo preview" class="mt-2 hidden w-32 h-32 object-cover rounded-md border" />
+           </div>
+           
+          <!-- Signature Upload -->
+           <div class="flex-1">
+             <label class="block text-sm font-medium text-gray-700">Signature (photo)</label>
+             <input id="signatureInput" name="signature" type="file" class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-sky-100 file:text-sky-700" />
+             <img id="signaturePreview" alt="Signature preview" class="mt-2 hidden w-48 h-20 object-contain rounded-md border bg-white" />
+           </div>
+        </div>
+
+        <!-- Submit and Reset Buttons -->
+        <div class="flex gap-3">
+          <button type="button" onclick="submitForm()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition">
+            Submit
+          </button>
+          <button type="button" onclick="resetForm()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition">
+            Reset
+          </button>
+        </div>
+      </form>
+      <!-- FORM END -->
+
+    </div>
+
+    <!-- JAVASCRIPT (Form Logic) -->
+    <script>
+
+      // Function: Handles form submission and sends data to Apps Script backend
+      function submitForm() {
+        const form = document.getElementById("userForm");
+  const photoInput = document.getElementById('photoInput');
+  const signatureInput = document.getElementById('signatureInput');
+
+        // Convert form data into an object
+        const formData = Object.fromEntries(new FormData(form).entries());
+
+        // Helper function: Convert file to Base64 string
+        function fileToBase64(file) {
+          return new Promise((resolve, reject) => {
+            if (!file) return resolve(null);
+            const reader = new FileReader();
+            reader.onload = () => {
+              const res = reader.result.split(',')[1];
+              resolve({ base64: res, contentType: file.type, filename: file.name });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+
+        // Convert both photo and signature to Base64
+        Promise.all([
+          fileToBase64(photoInput?.files[0]),
+          fileToBase64(signatureInput?.files[0])
+        ]).then(([photoObj, sigObj]) => {
+          if (photoObj) formData.photo = photoObj;
+          if (sigObj) formData.signature = sigObj;
+
+          // Debug: log presence and size of base64 payloads
+          try {
+            console.debug('[submit] photoObj present?', !!photoObj, 'photo base64 length:', photoObj && photoObj.base64 && photoObj.base64.length);
+            console.debug('[submit] signatureObj present?', !!sigObj, 'signature base64 length:', sigObj && sigObj.base64 && sigObj.base64.length);
+          } catch(e){ console.debug('[submit] debug log failed', e && e.message); }
+
+          // Send data to Google Apps Script backend
+          google.script.run.withSuccessHandler((res) => {
+            if (res && res.status === 'ok') {
+              alert('Form submitted successfully!');
+              // use the central reset to ensure previews and object URLs are cleared
+              try { resetForm(); } catch(e){ /* fallback */ form.reset(); }
+            } else if (res && res.status === 'error') {
+              if (res.message) {
+                alert('Server validation failed: ' + res.message);
+              }
+            } else {
+              alert('Unexpected server response');
+            }
+          }).submitData(formData);
+        }).catch(err => {
+          alert('Failed to read files: ' + err);
+        });
+      }
+
+      // Wire file input previews
+      (function(){
+        const photoInput = document.getElementById('photoInput');
+        const signatureInput = document.getElementById('signatureInput');
+        const photoPreview = document.getElementById('photoPreview');
+        const signaturePreview = document.getElementById('signaturePreview');
+        // Keep track of created object URLs so we can revoke them when resetting
+        var _createdObjectURLs = [];
+        // Show preview for selected file
+        function showPreview(input, img){
+          if(!input || !img) return;
+          const file = input.files && input.files[0];
+          if(!file){ img.src=''; img.classList.add('hidden'); return; }
+          // revoke previous URL for this img (if any)
+          try { if(img._url) { URL.revokeObjectURL(img._url); } } catch(e){}
+          img._url = URL.createObjectURL(file);
+          _createdObjectURLs.push(img._url);
+          img.src = img._url;
+          img.classList.remove('hidden');
+        }
+        // Bind preview update on file input change
+        if(photoInput) photoInput.addEventListener('change', ()=> showPreview(photoInput, photoPreview));
+        if(signatureInput) signatureInput.addEventListener('change', ()=> showPreview(signatureInput, signaturePreview));
+
+        // Expose a resetForm function to clear inputs and revoke object URLs
+        window.resetForm = function(){
+          try {
+            var form = document.getElementById('userForm');
+            if(form) form.reset();
+            // revoke any object URLs we created
+            try { _createdObjectURLs.forEach(u=>{ try{ URL.revokeObjectURL(u); }catch(e){} }); } catch(e){}
+            _createdObjectURLs = [];
+            if(photoPreview) { photoPreview.src = ''; photoPreview.classList.add('hidden'); if(photoPreview._url){ try{ URL.revokeObjectURL(photoPreview._url); }catch(e){} photoPreview._url = null; } }
+            if(signaturePreview) { signaturePreview.src = ''; signaturePreview.classList.add('hidden'); if(signaturePreview._url){ try{ URL.revokeObjectURL(signaturePreview._url); }catch(e){} signaturePreview._url = null; } }
+          } catch(e) { console.debug('resetForm error', e && e.message); }
+        };
+      })();
+    </script>
+
+    <!-- VANTA.JS BACKGROUND ANIMATION -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+    <script>
+    // Hold reference to the Vanta effect so we can snapshot/destroy it later
+    window.vantaEffect = null;
+    var setVanta = ()=>{
+      console.debug('[vanta] attempting init; VANTA present?', !!window.VANTA);
+      try {
+        if (window.VANTA) {
+          // store the returned effect object
+          window.vantaEffect = window.VANTA.GLOBE({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0xff3f81,
+            backgroundColor: 0x23153c
+          });
+          console.debug('[vanta] initialized', !!window.vantaEffect);
+          // remove fallback background once initialized
+          var vb = document.getElementById('vanta-bg'); if (vb) vb.style.background = 'transparent';
+        } else {
+          console.debug('[vanta] VANTA lib not loaded yet');
+        }
+      } catch (e) {
+        console.debug('Vanta init skipped:', e && e.message);
+      }
+    }
+
+    // try init a few times with a small delay in case script load is slightly delayed
+    (function tryInitVanta(retries){
+      retries = typeof retries === 'number' ? retries : 3;
+      var attempt = 0;
+      var id = setInterval(function(){
+        attempt++;
+        try {
+          setVanta();
+          if (window.vantaEffect) { clearInterval(id); return; }
+        } catch(e){ console.debug('[vanta] init attempt error', e && e.message); }
+        if (attempt >= retries) {
+          clearInterval(id);
+          console.debug('[vanta] giving up after', attempt, 'attempts');
+        }
+      }, 500);
+    })(3);
+
+    // Create a static snapshot of the current Vanta canvas and remove the animation.
+    function freezeVantaToStatic() {
+      try {
+        var effect = window.vantaEffect;
+        if (!effect) return;
+  // try to find the Vanta canvas inside the vanta container
+  var canvas = document.querySelector('#vanta-bg canvas');
+        if (canvas && canvas.toDataURL) {
+          try {
+            var data = canvas.toDataURL('image/png');
+            // apply as body background so the visual stays the same when we remove the canvas
+            document.body.style.backgroundImage = 'url(' + data + ')';
+            document.body.style.backgroundRepeat = 'no-repeat';
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundAttachment = 'fixed';
+          } catch (inner) {
+            console.debug('Failed to create Vanta snapshot:', inner && inner.message);
+          }
+        }
+        // destroy/kill the effect if possible
+        try { if (typeof effect.destroy === 'function') effect.destroy(); else if (typeof effect.kill === 'function') effect.kill(); } catch(e){}
+      } finally {
+        window.vantaEffect = null;
+      }
+    }
+
+    // Observe when the form card is in view, then freeze the animated background to a static image
+    function observeFormForStaticVanta() {
+      var card = document.getElementById('formCard');
+      if (!card || !('IntersectionObserver' in window)) return;
+      var io = new IntersectionObserver(function(entries, obs){
+        entries.forEach(function(entry){
+          console.debug('[vanta] observe entry', entry.intersectionRatio, entry.isIntersecting);
+          if (entry.isIntersecting) {
+            // form is visible — snapshot & stop animation
+            try { freezeVantaToStatic(); } catch(e){ console.debug('[vanta] freeze error', e && e.message); }
+            obs.disconnect();
+          }
+        });
+      }, { threshold: 0.25 });
+      io.observe(card);
+    }
+
+    // debug: watch for creation of the vanta canvas
+    (function watchVantaCanvas(){
+      var seen = false;
+      var check = setInterval(function(){
+        var c = document.querySelector('#vanta-bg canvas');
+        if (c) {
+          console.debug('[vanta] canvas found', c.width, c.height);
+          seen = true; clearInterval(check);
+        }
+      }, 200);
+      setTimeout(function(){ if(!seen) console.debug('[vanta] canvas not found after timeout'); }, 3000);
+    })();
+
+    if (typeof _strk !== 'undefined' && _strk && typeof _strk.push === 'function') {
+      _strk.push(function() {
+        setVanta();
+        observeFormForStaticVanta();
+        if (window.edit_page && window.edit_page.Event && typeof window.edit_page.Event.subscribe === 'function') {
+          window.edit_page.Event.subscribe("Page.beforeNewOneFadeIn", function(){ setVanta(); observeFormForStaticVanta(); });
+        }
+      });
+    } else {
+      setVanta();
+      observeFormForStaticVanta();
+      if (window.edit_page && window.edit_page.Event && typeof window.edit_page.Event.subscribe === 'function') {
+        window.edit_page.Event.subscribe("Page.beforeNewOneFadeIn", function(){ setVanta(); observeFormForStaticVanta(); });
+      }
+    }
+    </script>
+
+  </body>
+</html>
+ 
