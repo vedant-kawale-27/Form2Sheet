@@ -10,12 +10,21 @@
   <!-- Vanta background container (full-screen, behind content) -->
   <div id="vanta-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(135deg,#0f172a,#0ea5e9);"></div>
 
+  <!-- Loader Overlay -->
+<div id="loadingOverlay"
+     class="fixed inset-0 z-50 hidden flex items-center justify-center bg-white/70 backdrop-blur-sm transition-opacity duration-300">
+  <div class="flex text-sky-500 font-mono font-bold text-[20vh] opacity-90">
+    <span class="inline-block animate-pulse">{</span>
+    <span class="inline-block animate-pulse delay-200">}</span>
+  </div>
+</div>
+
   <!-- MAIN FORM CARD -->
   <div id="formCard" class="w-full max-w-lg bg-white rounded-xl shadow-md p-6" style="position:relative;z-index:10;">
       <h2 class="text-2xl font-semibold text-sky-600 text-center mb-6">Personal Details Form</h2>
       
       <!-- FORM START -->
-      <form id="userForm" class="space-y-4">
+      <form id="userForm" class="space-y-4" onsubmit="event.preventDefault(); submitForm();">
         <!-- Name -->
         <div>
           <label class="block text-sm font-medium text-gray-700">Name</label>
@@ -31,7 +40,7 @@
         <!-- Phone Number -->
         <div>
           <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-          <input type="tel" name="number" required class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-300" placeholder="(555) 555-0123">
+          <input type="tel" name="number" required class="mt-1 block w-full rounded-md border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-300" placeholder="5555501234" pattern="[0-9]{10}">
         </div>
 
         <!-- Gender -->
@@ -96,8 +105,12 @@
       // Function: Handles form submission and sends data to Apps Script backend
       function submitForm() {
         const form = document.getElementById("userForm");
-  const photoInput = document.getElementById('photoInput');
-  const signatureInput = document.getElementById('signatureInput');
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const photoInput = document.getElementById('photoInput');
+        const signatureInput = document.getElementById('signatureInput');
+
+      // Show loader
+      loadingOverlay.classList.remove("hidden");
 
         // Convert form data into an object
         const formData = Object.fromEntries(new FormData(form).entries());
@@ -132,6 +145,8 @@
 
           // Send data to Google Apps Script backend
           google.script.run.withSuccessHandler((res) => {
+            // Hide loader when done
+          loadingOverlay.classList.add("hidden");
             if (res && res.status === 'ok') {
               alert('Form submitted successfully!');
               // use the central reset to ensure previews and object URLs are cleared
@@ -145,6 +160,8 @@
             }
           }).submitData(formData);
         }).catch(err => {
+          // Hide loader when done
+          loadingOverlay.classList.add("hidden");
           alert('Failed to read files: ' + err);
         });
       }
