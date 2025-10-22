@@ -7,9 +7,9 @@ Built using **Tailwind CSS** for modern UI design and **Vanta.js** for an animat
 
 ## 🚀 Features
 
-✅ Collects user data (Name, Email, Phone, Gender, DOB, Address)  
+✅ Collects user data (Name, Email, Phone, Gender, DOB, Address, Photo, Signature)  
 ✅ Uploads photo and signature images to Google Drive  
-✅ Automatically saves form data and file links in Google Sheets  
+✅ Automatically saves form data in Google Sheets  
 ✅ Responsive layout (works on mobile, tablet, and desktop)  
 ✅ Built with modern front-end design (Tailwind CSS)  
 ✅ Animated background using Vanta.js for enhanced visual appeal  
@@ -35,7 +35,7 @@ Built using **Tailwind CSS** for modern UI design and **Vanta.js** for an animat
    - The encoded data is sent to Apps Script via `google.script.run`.
 4. The Apps Script backend:
    - Saves the photo and signature to **Google Drive** (in a specified folder).
-   - Logs the form details and file links in **Google Sheets**.
+   - Logs the form details and file in **Google Sheets**.
 5. A confirmation message is shown once the form is successfully submitted.
 
 
@@ -105,7 +105,7 @@ You’ll get a **Web App URL** — this is your form’s public link.
 
 ## 📄 Example Data Saved in Sheet
 
-| Timestamp  | Name     | Email                                       | Number     | Gender | DOB        | Address | Photo Link      | Signature Link      |
+| Timestamp  | Name     | Email                                       | Number     | Gender | DOB        | Address | Photo           | Signature           |
 | ---------- | -------- | ------------------------------------------- | ---------- | ------ | ---------- | ------- | --------------- | ------------------- |
 | 2025-10-21 | John Doe | [john@example.com](mailto:john@example.com) | 9876543210 | Male   | 2000-05-10 | Mumbai  | [View Photo](#) | [View Signature](#) |
 
@@ -122,7 +122,7 @@ Serves the HTML form page to users when they access the web app URL.
 Handles form submissions:
 
 * Uploads photo and signature files to Drive
-* Appends user details and file URLs to Google Sheets
+* Appends user details and file to Google Sheets
 
 ### `saveFileToDrive(folder, fileObject, prefix)`
 
